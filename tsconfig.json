@@ -1,0 +1,26 @@
+{
+  "ts-node": {
+    // Do not forget to `npm i -D tsconfig-paths`
+    "require": ["tsconfig-paths/register"]
+  },
+      "compilerOptions": {
+      "jsx": "react",
+      "target": "es5",
+      "module": "commonjs",
+      "outDir": "./dist",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "sourceMap": true,
+      "moduleResolution": "node",
+      
+    },
+    "include": [
+      "src/**/*.ts",
+      "src/types/.d.ts"    
+    ],
+    "exclude": [
+      "node_modules",
+      "**/*.spec.ts"
+    ]
+  }
+  

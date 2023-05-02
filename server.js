@@ -5,14 +5,11 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('./src/router/config');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
-app.use(cookieParser());
-
 
 const connection = mysql.createConnection({
   host: config.host,
@@ -26,8 +23,7 @@ connection.connect((err) => {
   console.log('Conectado ao banco de dados MySQL!');
 });
 
-
-const jwtSecret = 'seu_secreto_jwt';
+const jwtSecret = 'secret';
 
 app.post('/login', (req, res) => {
   const { email, senha } = req.body;
@@ -43,8 +39,7 @@ app.post('/login', (req, res) => {
           res.status(401).send({ error: 'Email ou senha incorretos.' });
         } else {
           const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: '1h' });
-          res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'none' });
-          res.json({ success: true });
+          res.status(200).send({ token });
         }
       });
     }
@@ -52,10 +47,11 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/verificarsessao', (req, res) => {
-  const token = req.cookies.token;
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     res.status(401).send({ error: 'Não autorizado.' });
   } else {
+    const token = authHeader.split(' ')[1];
     jwt.verify(token, jwtSecret, (err, decoded) => {
       if (err) {
         res.status(401).send({ error: 'Não autorizado.' });
@@ -67,7 +63,7 @@ app.get('/verificarsessao', (req, res) => {
             res.status(401).send({ error: 'Não autorizado.' });
           } else {
             const user = results[0];
-            res.json({ success: true, user });
+            res.status(200).send({ user });
           }
         });
       }
@@ -76,30 +72,120 @@ app.get('/verificarsessao', (req, res) => {
 });
 
 app.post('/regadm', (req, res) => {
-    const { nome, email, senha } = req.body;
-    bcrypt.hash(senha, 10, (err, hash) => {
-      if (err) throw err;
-      connection.query(`INSERT INTO usuarios (nome, email, senha) VALUES ('${nome}', '${email}', '${hash}')`, (err, results) => {
+      const { nome, email, senha } = req.body;
+      bcrypt.hash(senha, 10, (err, hash) => {
         if (err) throw err;
-        res.send({ message: 'Usuário criado com sucesso.' });
+        connection.query(`INSERT INTO usuarios (nome, email, senha) VALUES ('${nome}', '${email}', '${hash}')`, (err, results) => {
+          if (err) throw err;
+          res.send({ message: 'Usuário criado com sucesso.' });
+        });
       });
     });
-  });
 
-app.post('/addcliente', (req, res) => {
-    const { nome, cpf, endereco, email, whatsapp, observacoes } = req.body;
-    connection.query(
-      `INSERT INTO clientes (nome, cpf, endereco, email, whatsapp, observacoes) 
-      VALUES ('${nome}', '${cpf}', '${endereco}', '${email}', '${whatsapp}', '${observacoes}')`, 
-      (err, results) => {
-        if (err) throw err;
-        res.send({ message: 'Cliente cadastrado com sucesso.' });
-      }
-    );
-  });
+      app.post('/addcliente', (req, res) => {
+        const { nome, cpf, endereco, email, telefones, observacoes } = req.body;
+      
+        const { cep, rua, bairro, cidade, estado, numero } = endereco;
+      
+        connection.query(
+          `INSERT INTO clientes (nome, cpf, endereco_cep, endereco_rua, endereco_bairro, endereco_cidade, endereco_estado, endereco_numero, email, observacoes) 
+          VALUES ('${nome}', '${cpf}', '${cep}', '${rua}', '${bairro}', '${cidade}', '${estado}', '${numero}', '${email}', '${observacoes}')`, 
+          (err, results) => {
+            if (err) throw err;
+      
+            const clienteId = results.insertId;
+      
+            telefones.forEach(telefone => {
+              connection.query(`INSERT INTO telefones (numero, cliente_id) VALUES ('${telefone}', ${clienteId})`, (err, results) => {
+                if (err) throw err;
+              });
+            });
+      
+            res.send({ message: 'Cliente cadastrado com sucesso.' });
+          }
+        );
+      });
+        
+      app.get('/clientes', (req, res) => {
+        const query = `
+          SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
+          FROM clientes c
+          LEFT JOIN telefones t ON c.id = t.cliente_id
+          GROUP BY c.id
+        `;
+        
+        connection.query(query, (error, results, fields) => {
+          if (error) {
+            console.error('Erro ao listar clientes:', error);
+            res.status(500).send({ error: 'Não foi possível listar os clientes.' });
+            return;
+          }
+          
+          const clientes = results.map(cliente => ({
+            id: cliente.id,
+            nome: cliente.nome,
+            cpf: cliente.cpf,
+            endereco: {
+              cep: cliente.endereco_cep,
+              rua: cliente.endereco_rua,
+              bairro: cliente.endereco_bairro,
+              cidade: cliente.endereco_cidade,
+              estado: cliente.endereco_estado,
+              numero: cliente.endereco_numero,
+            },
+            email: cliente.email,
+            observacoes: cliente.observacoes,
+            telefones: cliente.telefones.split(', '),
+          }));
+          
+          res.send(clientes);
+        });
+      });
 
+      app.get('/clientes/:id', (req, res) => {
+        const { id } = req.params;
+        const query = `
+          SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
+          FROM clientes c
+          LEFT JOIN telefones t ON c.id = t.cliente_id
+          WHERE c.id = ?
+          GROUP BY c.id
+        `;
+      
+        connection.query(query, [id], (error, results, fields) => {
+          if (error) {
+            console.error(`Erro ao buscar cliente ${id}:`, error);
+            res.status(500).send({ error: 'Não foi possível buscar o cliente.' });
+            return;
+          }
+          if (results.length === 0) {
+            res.status(404).send({ error: `Cliente ${id} não encontrado.` });
+            return;
+          }
+      
+          const cliente = {
+            id: results[0].id,
+            nome: results[0].nome,
+            cpf: results[0].cpf,
+            endereco: {
+              cep: results[0].endereco_cep,
+              rua: results[0].endereco_rua,
+              bairro: results[0].endereco_bairro,
+              cidade: results[0].endereco_cidade,
+              estado: results[0].endereco_estado,
+              numero: results[0].endereco_numero,
+            },
+            email: results[0].email,
+            observacoes: results[0].observacoes,
+            telefones: results[0].telefones.split(', '),
+          };
+      
+          res.send(cliente);
+        });
+      });
+      
 
 
 app.listen(3000, () => {
-  console.log('Servidor iniciado na porta 3000!');
-});
+    console.log('Servidor iniciado na porta 3000!');
+  });
