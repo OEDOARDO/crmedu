@@ -7,7 +7,7 @@ const Header = () => {
   <Container>
     <Navbar.Brand href="/" className="d-flex align-items-center">
       <img
-        src="logo.png"
+        src={process.env.PUBLIC_URL + "/logo.png"}
         alt="DataJuri Logo"
         height="30"
         className="d-inline-block align-top me-2"

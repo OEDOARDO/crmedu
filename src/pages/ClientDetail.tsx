@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import Header from "./Header";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface Client {
   id: number;
   nome: string;
   cpf: string;
+  endereco: {
+    cep: string;
+    rua: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    numero: string;
+  };
   email: string;
-  // adicione aqui outras propriedades que deseja exibir
+  observacoes: string;
+  telefones: string[];
 }
 
 interface Props {
@@ -19,10 +30,59 @@ function ClientDetail() {
     id: 0,
     nome: '',
     cpf: '',
+    endereco: {
+      cep: '',
+      rua: '',
+      bairro: '',
+      cidade: '',
+      estado: '',
+      numero: '',
+    },
     email: '',
+    observacoes: '',
+    telefones: [],
   });
 
+  const [editing, setEditing] = useState(false);
   const { id } = useParams<Record<string, string>>();
+  const handleEditClick = () => {
+    setEditing(true);
+  };
+  // Função para atualizar um telefone existente
+const updateTelefone = (index, telefone) => {
+    const telefonesAtualizados = [...client.telefones];
+    telefonesAtualizados[index] = telefone;
+    setClient({ ...client, telefones: telefonesAtualizados });
+  };
+  
+  // Função para adicionar um novo telefone
+  const addTelefone = () => {
+    if (client.telefones.length < 3) {
+      setClient({ ...client, telefones: [...client.telefones, ""] });
+    }
+  };    
+
+  const handleSaveClick = () => {
+    axios
+      .put(`http://localhost:3000/clientes/${id}`, client)
+      .then(() => {
+        setEditing(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const handleDeleteClick = () => {
+    axios
+      .delete(`http://localhost:3000/clientes/${id}`)
+      .then(() => {
+        // redirecionar para a lista de clientes após a exclusão bem sucedida
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   useEffect(() => {
     axios
@@ -36,11 +96,80 @@ function ClientDetail() {
   }, [id]);
 
   return (
+
+    <div className="container">
+         <Header />
+      <h2>Detalhes do cliente</h2>
+      <div className="row">
+        <div className="col-sm-4">
+          <label htmlFor="nome">Nome:</label>
+          <input type="text" className="form-control" id="nome" value={client.nome} disabled={!editing} onChange={(event) => setClient({ ...client, nome: event.target.value })} />
+        </div>
+        
+        <div className="col-sm-4">
+          <label htmlFor="cpf">CPF:</label>
+          <input type="text" className="form-control" id="cpf" value={client.cpf} disabled={!editing} onChange={(event) => setClient({ ...client, cpf: event.target.value })} />
+        </div>
+        <div className="col-sm-4">
+          <label htmlFor="email">E-mail:</label>
+          <input type="text" className="form-control" id="email" value={client.email} disabled={!editing} onChange={(event) => setClient({ ...client, email: event.target.value })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="cep">CEP:</label>
+        <input type="text" className="form-control" id="cep" value={client.endereco.cep} disabled={!editing} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, cep: event.target.value } })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="rua">Rua:</label>
+        <input type="text" className="form-control" id="rua" value={client.endereco.rua} disabled={!editing} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, rua: event.target.value } })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="bairro">Bairro:</label>
+        <input type="text" className="form-control" id="bairro" value={client.endereco.bairro} disabled={!editing} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, bairro: event.target.value } })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="cidade">Cidade:</label>
+        <input type="text" className="form-control" id="cidade" value={client.endereco.cidade} disabled={!editing} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, cidade: event.target.value } })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="estado">Estado:</label>
+        <input type="text" className="form-control" id="estado" value={client.endereco.estado} disabled={!editing} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, estado: event.target.value } })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="numero">Número:</label>
+        <input type="text" className="form-control" id="numero" value={client.endereco.numero} disabled={!editing} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, numero: event.target.value } })} />
+        </div>
+        <div className="col-sm-4">
+        <label htmlFor="observacoes">Observações:</label>
+        <textarea className="form-control" id="observacoes" value={client.observacoes} disabled={!editing} onChange={(event) => setClient({ ...client, observacoes: event.target.value })} />
+        </div>
+        <div className="col-sm-4">
+  <label htmlFor="telefones">Telefones:</label>
+  {client.telefones.map((telefone, index) => (
+    <div key={index} className="mb-2">
+      <input type="text" value={telefone} disabled={!editing} onChange={(event) => updateTelefone(event, index)} className="form-control" />
+    </div>
+  ))}
+  {client.telefones.length < 3 && editing && (
     <div>
-      <h2>{client.nome}</h2>
-      <p>{client.cpf}</p>
-      <p>{client.email}</p>
-      {/* Adicione aqui os outros campos que deseja exibir */}
+      <button className="btn btn-primary" onClick={addTelefone}>Adicionar telefone</button>
+    </div>
+  )}
+</div>
+      </div>
+      {editing ? (
+  <button className="btn btn-primary" onClick={handleSaveClick}>
+    Salvar
+  </button>
+) : (
+  <button className="btn btn-primary" onClick={handleEditClick}>
+    Editar
+  </button>
+)}
+
+<button className="btn btn-danger" onClick={handleDeleteClick}>
+  Excluir
+</button>
+
     </div>
   );
 }

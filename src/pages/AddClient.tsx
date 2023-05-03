@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import axios from "axios";
 import Header from "./Header";
+import { telefoneRegex, cpfRegex, cepRegex } from "../components/regex";
 
 
 const AddClient = () => {
@@ -60,32 +61,18 @@ const AddClient = () => {
     if (name.startsWith("telefone")) {
       const telefoneIndex = Number(name.replace("telefone", ""));
       const telefones = [...formData.telefones];
-      telefones[telefoneIndex] = value
-        .replace(/\D/g, "")
-        .replace(/^(\d{2})(\d)/g, "($1)$2")
-        .replace(/(\d)(\d{4})$/, "$1-$2");
+      telefones[telefoneIndex] = telefoneRegex(value)
       setFormData({
         ...formData,
         telefones,
       });
-    } else if (name === "cpf") {
-      const formattedCPF = value
-        .replace(/\D/g, "")
-        .slice(0, 11)
-        .replace(/(\d{3})(\d{1,3})?(\d{1,3})?(\d{1,2})?/, (match, p1, p2, p3, p4) => {
-          let result = "";
-          if (p1) result += p1;
-          if (p2) result += `.${p2}`;
-          if (p3) result += `.${p3}`;
-          if (p4) result += `-${p4}`;
-          return result;
-        });
 
+    } else if (name === "cpf") {
+      const formattedCPF = cpfRegex(value);
       setFormData({ ...formData, [name]: formattedCPF });
+
     } else if (name === "endereco.cep") {
-      const cepRegex = /^(\d{5})-?(\d{3})??$/;
-      const cep = value.replace(cepRegex, "$1-$2");
-      console.log("CEP:", cep);
+      const cep = cepRegex(value);
       setFormData({ ...formData, endereco: { ...formData.endereco, cep: cep } });
       if (cep.length === 9) {
         axios.get(`https://viacep.com.br/ws/${cep}/json/`).then((res) => {
