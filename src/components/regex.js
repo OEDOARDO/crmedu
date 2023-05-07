@@ -19,7 +19,10 @@ export const telefoneRegex = (value) => {
         });
   };
   
-  export const cepRegex = (value) => {
+  export const cepRegex = (value) => {  
     return value.replace(/^(\d{5})-?(\d{3})??$/, "$1-$2");
   };
   
+  export const emailRegex = () => {
+    return /^[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,}$/i;
+    }

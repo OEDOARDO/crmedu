@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import axios from "axios";
 import Header from "./Header";
-import { telefoneRegex, cpfRegex, cepRegex } from "../components/regex";
-
+import { telefoneRegex, cpfRegex, cepRegex, emailRegex } from "../components/regex";
+import consultarCep from '../components/ConsultarCep';
 
 const AddClient = () => {
   const [formData, setFormData] = useState({
     nome: "",
     cpf: "",
-    telefones: [""], 
+    telefones: [""],
     endereco: {
       cep: "",
       rua: "",
@@ -75,21 +75,7 @@ const AddClient = () => {
       const cep = cepRegex(value);
       setFormData({ ...formData, endereco: { ...formData.endereco, cep: cep } });
       if (cep.length === 9) {
-        axios.get(`https://viacep.com.br/ws/${cep}/json/`).then((res) => {
-          console.log(res.data);
-          const { logradouro, bairro, localidade, uf } = res.data;
-          setFormData({
-            ...formData,
-            endereco: {
-              ...formData.endereco,
-              cep: cep,
-              rua: logradouro,
-              bairro: bairro,
-              cidade: localidade,
-              estado: uf,
-            },
-          });
-        });
+        consultarCep(cep, setFormData, formData);
       }
     } else if (name.startsWith("endereco.")) {
       const enderecoFieldName = name.split(".")[1];
@@ -100,10 +86,11 @@ const AddClient = () => {
           [enderecoFieldName]: value,
         },
       });
-    } else { {
-      setFormData({ ...formData, [name]: value });
+    } else {
+      {
+        setFormData({ ...formData, [name]: value });
+      }
     }
-  }
   };
 
   return (
@@ -138,52 +125,50 @@ const AddClient = () => {
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="formBasicTelefones">
-  <Form.Label>Telefones</Form.Label>
-  {formData.telefones.map((telefone, index) => (
-    <div key={index}>
-      <Form.Control
-        type="text"
-        name={`telefone${index}`}
-        placeholder="Telefone com DDD"
-        onChange={handleChange}
-        value={telefone}
-        maxLength={14}
-      />
-    </div>
-  ))}
-  <Button variant="primary" onClick={handleAddTelefone}>
-    Adicionar Outros Números
-  </Button>
-</Form.Group>
+                <Form.Label>Telefones</Form.Label>
+                {formData.telefones.map((telefone, index) => (
+                  <div key={index}>
+                    <Form.Control
+                      type="text"
+                      name={`telefone${index}`}
+                      placeholder="Telefone com DDD"
+                      onChange={handleChange}
+                      value={telefone}
+                      maxLength={14}
+                    />
+                  </div>
+                ))}
+                <Button variant="primary" onClick={handleAddTelefone}>
+                  Adicionar Outros Números
+                </Button>
+              </Form.Group>
 
               <Form.Group controlId="formEndereco">
-<Form.Group controlId="formCEP">
-<Form.Label>CEP</Form.Label>
-<Form.Control type="text" placeholder="Digite o CEP" name="endereco.cep" value={formData.endereco.cep} maxLength={9} onChange={handleChange} required />
-</Form.Group>
-<Form.Group controlId="formRua">
-<Form.Label>Rua</Form.Label>
-<Form.Control type="text" placeholder="Digite a rua" name="endereco.rua" value={formData.endereco.rua} onChange={handleChange} required />
-</Form.Group>
-<Form.Group controlId="formBairro">
-<Form.Label>Bairro</Form.Label>
-<Form.Control type="text" placeholder="Digite o bairro" name="endereco.bairro" value={formData.endereco.bairro} onChange={handleChange} required />
-</Form.Group>
-<Form.Group controlId="formCidade">
-<Form.Label>Cidade</Form.Label>
-<Form.Control type="text" placeholder="Digite a cidade" name="endereco.cidade" value={formData.endereco.cidade} onChange={handleChange} required />
-</Form.Group>
-<Form.Group controlId="formEstado">
-<Form.Label>Estado</Form.Label>
-<Form.Control type="text" placeholder="Digite o estado" name="endereco.estado" value={formData.endereco.estado} onChange={handleChange} required />
-</Form.Group>
-<Form.Group controlId="formNumero">
-<Form.Label>Número</Form.Label>
-<Form.Control type="text" placeholder="Digite o número" name="endereco.numero" value={formData.endereco.numero} onChange={handleChange} required />
-</Form.Group>
-</Form.Group>
-
-
+                <Form.Group controlId="formCEP">
+                  <Form.Label>CEP</Form.Label>
+                  <Form.Control type="text" placeholder="Digite o CEP" name="endereco.cep" value={formData.endereco.cep} maxLength={9} onChange={handleChange} required />
+                </Form.Group>
+                <Form.Group controlId="formRua">
+                  <Form.Label>Rua</Form.Label>
+                  <Form.Control type="text" placeholder="Digite a rua" name="endereco.rua" value={formData.endereco.rua} onChange={handleChange} required />
+                </Form.Group>
+                <Form.Group controlId="formBairro">
+                  <Form.Label>Bairro</Form.Label>
+                  <Form.Control type="text" placeholder="Digite o bairro" name="endereco.bairro" value={formData.endereco.bairro} onChange={handleChange} required />
+                </Form.Group>
+                <Form.Group controlId="formCidade">
+                  <Form.Label>Cidade</Form.Label>
+                  <Form.Control type="text" placeholder="Digite a cidade" name="endereco.cidade" value={formData.endereco.cidade} onChange={handleChange} required />
+                </Form.Group>
+                <Form.Group controlId="formEstado">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Control type="text" placeholder="Digite o estado" name="endereco.estado" value={formData.endereco.estado} onChange={handleChange} required />
+                </Form.Group>
+                <Form.Group controlId="formNumero">
+                  <Form.Label>Número</Form.Label>
+                  <Form.Control type="text" placeholder="Digite o número" name="endereco.numero" value={formData.endereco.numero} onChange={handleChange} required />
+                </Form.Group>
+              </Form.Group>
               <Form.Group className="mb-3" controlId="formEmail">
                 <Form.Label>E-mail</Form.Label>
                 <Form.Control
