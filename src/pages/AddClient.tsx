@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import axios from "axios";
 import Header from "./Header";
-import { telefoneRegex, cpfRegex, cepRegex, emailRegex } from "../components/regex";
+import { telefoneRegex, cpfRegex, cepRegex } from "../components/regex";
 import consultarCep from '../components/ConsultarCep';
+
 
 const AddClient = () => {
   const [formData, setFormData] = useState({
@@ -95,7 +96,7 @@ const AddClient = () => {
 
   return (
     <>
-      <Header />
+       <Header />
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6">
@@ -175,7 +176,7 @@ const AddClient = () => {
                   type="email"
                   placeholder="Digite o e-mail"
                   name="email"
-                  value={formData.email}
+                  value={formData.email}  
                   onChange={handleChange}
                   pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                   required
@@ -201,6 +202,7 @@ const AddClient = () => {
           </div>
         </div>
       </div>
+
     </>
   );
 };

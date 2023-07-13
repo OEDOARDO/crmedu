@@ -5,28 +5,10 @@ import Header from "./Header";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import consultarCep from '../components/ConsultarCep';
 import { cpfRegex, telefoneRegex, emailRegex, cepRegex } from '../components/regex';
+import { Client } from '../components/interface';
+import { Container } from 'react-bootstrap';
 
 
-interface Client {
-  id: number;
-  nome: string;
-  cpf: string;
-  endereco: {
-    cep: string;
-    rua: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    numero: string;
-  };
-  email: string;
-  observacoes: string;
-  telefones: string[];
-}
-
-interface Props {
-  id: string;
-}
 
 function ClientDetail() {
   const [client, setClient] = useState<Client>({
@@ -151,9 +133,8 @@ function ClientDetail() {
   }, [id]);
 
   return (
+    <><Header /><Container fluid>
 
-    <div className="container">
-      <Header />
       <h2>Detalhes do cliente</h2>
       <div className="row">
         <div className="col-sm-4">
@@ -161,13 +142,13 @@ function ClientDetail() {
           <input type="text" className="form-control" id="nome" value={client.nome} disabled={!editing} onChange={(event) => setClient({ ...client, nome: event.target.value })} />
         </div>
         <div className="col-sm-4">
-  <label htmlFor="cpf">CPF:</label>
-  <input type="text" className="form-control" id="cpf" value={client.cpf} disabled={!editing} onChange={(event) => setClient({ ...client, cpf: event.target.value })} onBlur={(event) => setClient({ ...client, cpf: cpfRegex(event.target.value) })} />
-</div>
-<div className="col-sm-4">
-  <label htmlFor="email">E-mail:</label>
-  <input type="text" className="form-control" id="email" value={client.email} disabled={!editing} onChange={(event) => setClient({ ...client, email: event.target.value })} pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" />
-</div>
+          <label htmlFor="cpf">CPF:</label>
+          <input type="text" className="form-control" id="cpf" value={client.cpf} disabled={!editing} onChange={(event) => setClient({ ...client, cpf: event.target.value })} onBlur={(event) => setClient({ ...client, cpf: cpfRegex(event.target.value) })} />
+        </div>
+        <div className="col-sm-4">
+          <label htmlFor="email">E-mail:</label>
+          <input type="text" className="form-control" id="email" value={client.email} disabled={!editing} onChange={(event) => setClient({ ...client, email: event.target.value })} pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" />
+        </div>
         <div className="col-sm-4">
           <label htmlFor="cep">CEP:</label>
           <input type="text" className="form-control" id="cep" value={client.endereco.cep} disabled={!editing || consultandoCep} onChange={(event) => setClient({ ...client, endereco: { ...client.endereco, cep: event.target.value } })} onBlur={(event) => handleCepBlur(event.target.value)} />
@@ -198,18 +179,18 @@ function ClientDetail() {
           <textarea className="form-control" id="observacoes" value={client.observacoes} disabled={!editing} onChange={(event) => setClient({ ...client, observacoes: event.target.value })} />
         </div>
         <div className="col-sm-4">
-  <label htmlFor="telefones">Telefones:</label>
-  {client.telefones.map((telefone, index) => (
-    <div key={index} className="mb-2">
-      <input type="text" value={telefone} disabled={!editing} onChange={(event) => updateTelefone(event, index)} onBlur={(event) => handleTelefoneBlur(event, index)} className="form-control" />
-    </div>
-  ))}
-  {client.telefones.length < 3 && editing && (
-    <div>
-      <button className="btn btn-primary" onClick={addTelefone}>Adicionar telefone</button>
-    </div>
-  )}
-</div>
+          <label htmlFor="telefones">Telefones:</label>
+          {client.telefones.map((telefone, index) => (
+            <div key={index} className="mb-2">
+              <input type="text" value={telefone} disabled={!editing} onChange={(event) => updateTelefone(event, index)} onBlur={(event) => handleTelefoneBlur(event, index)} className="form-control" />
+            </div>
+          ))}
+          {client.telefones.length < 3 && editing && (
+            <div>
+              <button className="btn btn-primary" onClick={addTelefone}>Adicionar telefone</button>
+            </div>
+          )}
+        </div>
       </div>
       {editing ? (
         <button className="btn btn-primary" onClick={handleSaveClick}>
@@ -220,13 +201,11 @@ function ClientDetail() {
           Editar
         </button>
       )}
-
       <button className="btn btn-danger" onClick={handleDeleteClick}>
         Excluir
       </button>
-
-    </div>
-  );
+    </Container></>
+);
 }
 
 export default ClientDetail;

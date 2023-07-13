@@ -3,10 +3,13 @@ import axios from 'axios';
 import { Form, Button } from 'react-bootstrap';
 import './Login.css';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [senha, setPassword] = useState('');
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const navigate = useNavigate();
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -16,35 +19,37 @@ const Login = () => {
     setPassword(event.target.value);
   };
 
-    const handleSubmit = async (event) => {
-      event.preventDefault();
-      try {
-        const response = await axios.post('http://localhost:3000/login', { email, senha });
-        console.log(response.data); 
-        const token = response.headers.authorization;
-        axios.defaults.headers.common['Authorization'] = token;
-        console.log(token);
-        window.location.href = '/home';
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:3000/login', { email, senha });
+      const { token, id } = response.data;
+      console.log(response.data);
+      Cookies.set("token", token);
+      Cookies.set("userId", id);  
+      axios.defaults.headers.common['Authorization'] = token;
+      navigate('/'); // Navegar para a rota de home usando useNavigate
+    } catch (error) {
+      console.error(error);
+    }
+  };  
 
-    useEffect(() => {
-      const token = Cookies.get('token');
-      if (token) {
-        axios.get('http://localhost:3000/verificarsessao', { headers: { Authorization: `Bearer ${token}` } })
-          .then(() => {
-            window.location.href = '/home';
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      }
-    }, []);
-  
-  
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token && !sessionChecked) {
+      axios
+        .get('http://localhost:3000/verificarsessao', { headers: { Authorization: `Bearer ${token}` } })
+        .then(() => {
+          console.log('Sessão autenticada');
+          setSessionChecked(true); // Atualiza o estado da sessão verificada para true
+          navigate('/home'); // Redireciona para a rota de home
+        })
+        .catch((error) => {
+          console.error(error);
+          navigate('/login');
+        });
+    }
+  }, [sessionChecked, navigate]);
 
   return (
     <div className="login-container">

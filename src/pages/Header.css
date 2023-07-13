@@ -1,18 +1,96 @@
-.datajuri-navbar {
-  background-color: #1f4287;
+/* Estilos para o header superior */
+.header-top {
+  background-color: #006db0;
+  padding: 10px 0;
+  width: 100%; /* Adicione esta linha */
 }
 
-.datajuri-brand {
-  color: #fff !important;
+.header-top-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.datajuri-link {
-  color: #fff !important;
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 40px;
+  height: 40px;
   margin-right: 10px;
 }
 
-.datajuri-link:hover {
-  color: #fff !important;
-  background-color: #004e92;
-  border-radius: 5px;
+.company-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.search-bar {
+  flex-grow: 1;
+  margin: 0 20px;
+}
+
+.search-bar .form-control {
+  width: 100%;
+  background-color: #f8f9fa;
+  color: #343a40;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+}
+
+.username {
+  margin-right: 10px;
+  color: #fff;
+}
+
+.logout-button,
+.notification-button {
+  margin-left: 10px;
+  color: #343a40;
+}
+
+/* Estilos para o header inferior (navbar) */
+.header-bottom {
+  background-color: #1f4662;
+}
+
+.navbar {
+  padding: 10px 0;
+}
+
+.navbar-nav .nav-link {
+  color: #fff;
+  margin-right: 10px;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: #fff;
+}
+
+/* Estilos para o subheader */
+.subheader {
+  background-color: #00456b;
+  padding: 10px 0;
+}
+
+.subheader-nav {
+  display: flex;
+  justify-content: center;
+}
+
+.subheader-nav .nav-link {
+  color: #fff;
+  margin: 0 10px;
+}
+
+.subheader-nav .nav-link:hover,
+.subheader-nav .nav-link.active {
+  color: #fff;
 }
