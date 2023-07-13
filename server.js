@@ -1,6 +1,5 @@
 const express = require('express');
 const mysql = require('mysql');
-const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('./src/router/config');
