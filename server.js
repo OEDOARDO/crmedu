@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const config = require('./src/router/config');
 const cors = require('cors');
 const app = express();
+bodyParser = require('body-parser');
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
