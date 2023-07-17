@@ -24,7 +24,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build --legacy-peer-deps",
-    "start-server": "npm run build && node server.js"
+    "start-server": "node server.js && npm start"
   },
   "eslintConfig": {
     "extends": [
