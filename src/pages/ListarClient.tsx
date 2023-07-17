@@ -80,7 +80,7 @@
     return (
       <>
         <Header />
-        <Container fluid>
+        <Container>
           <Form>
             <Row>
               <Col xl={3} className="d-flex flex-row">
