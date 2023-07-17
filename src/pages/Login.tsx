@@ -24,7 +24,6 @@ const Login = () => {
     try {
       const response = await axios.post('http://localhost:3000/login', { email, senha });
       const { token, id } = response.data;
-      console.log(response.data);
       Cookies.set("token", token);
       Cookies.set("userId", id);  
       axios.defaults.headers.common['Authorization'] = token;
