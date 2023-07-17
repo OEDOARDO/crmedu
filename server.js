@@ -529,21 +529,27 @@ app.get('/tipos-de-processo/:id', (req, res) => {
       });
         
       app.get('/clientes', (req, res) => {
+        const { page } = req.query;
+        const itemsPerPage = 10;
+        const offset = (page - 1) * itemsPerPage;
+      
         const query = `
           SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
           FROM clientes c
           LEFT JOIN telefones t ON c.id = t.cliente_id
           GROUP BY c.id
+          LIMIT ${itemsPerPage}
+          OFFSET ${offset}
         `;
-        
+      
         connection.query(query, (error, results, fields) => {
           if (error) {
             console.error('Erro ao listar clientes:', error);
             res.status(500).send({ error: 'Não foi possível listar os clientes.' });
             return;
           }
-          
-          const clientes = results.map(cliente => ({
+      
+          const clientes = results.map((cliente) => ({
             id: cliente.id,
             nome: cliente.nome,
             cpf: cliente.cpf,
@@ -559,10 +565,27 @@ app.get('/tipos-de-processo/:id', (req, res) => {
             observacoes: cliente.observacoes,
             telefones: cliente.telefones.split(', '),
           }));
-          
+      
           res.send(clientes);
         });
       });
+      
+      app.get('/clientes/count', (req, res) => {
+        const query = 'SELECT COUNT(*) AS count FROM clientes';
+        
+        connection.query(query, (error, results, fields) => {
+          if (error) {
+            console.error('Erro ao contar clientes:', error);
+            res.status(500).send({ error: 'Não foi possível contar os clientes.' });
+            return;
+          }
+          
+          const count = results[0].count;
+          
+          res.send({ count });
+        });
+      });
+      
 
       app.get('/clientes/:id', (req, res) => {
         const { id } = req.params;

@@ -18,6 +18,8 @@
     setSelected: (person: Client & { id: number }) => void;
   }
 
+
+
   const Clients: React.FC<ListarClientProps> = ({ data, setSelected }) => (
     <tbody>
       {data.map((client) => (
@@ -42,11 +44,26 @@
       setCurrentPage(selectedItem.selected);
     };
 
+    const [totalPages, setTotalPages] = React.useState<number>(0);
+
     useEffect(() => {
       axios
-        .get(`http://localhost:3000/clientes?page=${currentPage}`)
+      .get(`http://localhost:3000/clientes?page=${currentPage + 1}`)
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    
+    
+      // Requisição separada para obter o número total de registros
+      axios
+        .get("http://localhost:3000/clientes/count")
         .then((response) => {
-          setData(response.data);
+          const totalCount = response.data.count;
+          const totalPages = Math.ceil(totalCount / 10); // Altere "10" para o número de itens exibidos por página
+          setTotalPages(totalPages);
         })
         .catch((error) => {
           console.log(error);
@@ -93,8 +110,8 @@
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>Nome</th>
-                  <th>CPF</th>
+                <th style={{ width: "50%" }}>Nome</th>
+                <th style={{ width: "50%" }}>CPF</th>
                 </tr>
               </thead>
               <Clients data={data} setSelected={setSelected} />
@@ -102,10 +119,11 @@
           </Card>
 
           <div className="d-flex justify-content-center mt-3">
+          {totalPages ? (
             <ReactPaginate
               previousLabel={"Anterior"}
               nextLabel={"Próxima"}
-              pageCount={10}
+              pageCount={totalPages}
               marginPagesDisplayed={5}
               pageRangeDisplayed={0}
               onPageChange={handlePageClick}
@@ -121,6 +139,9 @@
               breakLinkClassName={"page-link"}
               disabledClassName={"disabled"}
             />
+            ) : (
+              <span>Carregando...</span>
+              )}
           </div>
         </Container>
       </>
