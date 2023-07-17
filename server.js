@@ -258,18 +258,42 @@ app.post('/processos', (req, res) => {
   });
 });
 
-    app.get('/processos', (req, res) => {
-      connection.query('SELECT * FROM processos', (err, results) => {
+app.get('/processos', (req, res) => {
+  const page = req.query.page || 1; // Página atual, padrão é 1
+  const perPage = 5; // Número de processos por página
+
+  const offset = (page - 1) * perPage; // Cálculo do deslocamento
+
+  const query = `
+    SELECT * FROM processos
+    LIMIT ${perPage} OFFSET ${offset}
+  `;
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send({ error: 'Erro ao obter os processos.' });
+      return;
+    }
+
+    res.send(results);
+  });
+});
+
+
+    app.get('/processos/count', (req, res) => {
+      connection.query('SELECT COUNT(*) AS count FROM processos', (err, results) => {
         if (err) {
-          // Trate os erros adequadamente
           console.error(err);
-          res.status(500).send({ error: 'Erro ao obter os processos.' });
+          res.status(500).send({ error: 'Erro ao obter o número total de registros de processos.' });
           return;
         }
-    
-        res.send(results);
+        
+        const totalCount = results[0].count;
+        res.send({ count: totalCount });
       });
     });
+    
 
     app.get('/processos/:id', (req, res) => {
       const { id } = req.params;
@@ -569,7 +593,7 @@ app.get('/tipos-de-processo/:id', (req, res) => {
           res.send(clientes);
         });
       });
-      
+
       app.get('/clientes/count', (req, res) => {
         const query = 'SELECT COUNT(*) AS count FROM clientes';
         
