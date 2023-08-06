@@ -6,6 +6,10 @@ const config = require('./src/router/config');
 const cors = require('cors');
 const app = express();
 bodyParser = require('body-parser');
+const { getAccessToken } = require("./src/components/gtoken");
+const axios = require("axios");
+
+
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -25,6 +29,7 @@ connection.connect((err) => {
 });
 
 const jwtSecret = 'secret';
+
 
 app.post('/login', (req, res) => {
   const { email, senha } = req.body;
@@ -64,7 +69,7 @@ app.post("/registrar-andamento", async (req, res) => {
       const novoAgendamento = {
         atividade,
         grupo,
-        data_agendamento: formatDate(dataAgendamento), // Formate a data no formato "dia/mês/ano"
+        data_agendamento: formatDate(dataAgendamento), // Formate a data no formato "ano-mês-dia"
         usuario: null,
       };
 
@@ -139,13 +144,12 @@ app.post("/registrar-andamento", async (req, res) => {
 
 function formatDate(date) {
   const data = new Date(date);
-  const dia = String(data.getDate()).padStart(2, '0');
-  const mes = String(data.getMonth() + 1).padStart(2, '0');
   const ano = String(data.getFullYear());
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
 
-  return `${ano}/${mes}/${dia}`;
+  return `${ano}-${mes}-${dia}`;
 }
-
 
 
 
@@ -225,13 +229,13 @@ app.get('/usuarios/:id', (req, res) => {
 
 
 app.post('/processos', (req, res) => {
-  const { cliente, parteContraria, numeroProcesso, tipoProcesso, estado, cidade, status } = req.body;
+  const { cliente, parteContraria, numeroProcesso, tipoProcesso, estado, cidade, status, googledrive } = req.body;
 
   // Verifica se o número do processo está definido
   const numero = numeroProcesso ? numeroProcesso : null;
 
-  const query = `INSERT INTO processos (id_cliente, parte_contraria, numero_processo, tipo_processo, estado, comarca, data_protocolo, status) 
-                 VALUES ('${cliente}', '${parteContraria}', '${numero}', '${tipoProcesso}', '${estado}', '${cidade}', CURDATE(), ${status})`;
+  const query = `INSERT INTO processos (id_cliente, parte_contraria, numero_processo, tipo_processo, estado, comarca, data_protocolo, status, googledrive) 
+                 VALUES ('${cliente}', '${parteContraria}', '${numero}', '${tipoProcesso}', '${estado}', '${cidade}', CURDATE(), ${status}, '${googledrive.folderId}')`;
 
   connection.query(query, (err, results) => {
     if (err) {
@@ -253,10 +257,48 @@ app.post('/processos', (req, res) => {
         return;
       }
 
-      res.send({ message: 'Processo adicionado com sucesso.' });
+      // Retorna o processoId na resposta da API
+      res.send({ id: processoId, message: 'Processo adicionado com sucesso.' });
     });
   });
 });
+
+app.put('/processos/:id', async (req, res) => {
+  const processoId = req.params.id;
+  const { cliente, parteContraria, numeroProcesso, tipoProcesso, estado, cidade, status, googledrive } = req.body;
+
+  // Verifica se o número do processo está definido
+  const numero = numeroProcesso ? numeroProcesso : null;
+
+  try {
+    // Extrair somente o FolderId do objeto googledrive recebido na requisição
+    const { FolderId } = googledrive;
+
+    const updateQuery = `UPDATE processos SET 
+      id_cliente = '${cliente}',
+      parte_contraria = '${parteContraria}',
+      numero_processo = '${numero}',
+      tipo_processo = '${tipoProcesso}',
+      estado = '${estado}',
+      comarca = '${cidade}',
+      data_protocolo = CURDATE(),
+      status = ${status},
+      googledrive = '${FolderId}'
+      WHERE id = ${processoId}`;
+
+    await connection.query(updateQuery);
+
+    const numeroAtualizado = numero || processoId;
+    const numeroAtualizadoQuery = `UPDATE processos SET numero_processo = '${numeroAtualizado}' WHERE id = ${processoId}`;
+    await connection.query(numeroAtualizadoQuery);
+
+    res.send({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ error: 'Erro ao atualizar o processo.' });
+  }
+});
+
 
 app.get('/processos', (req, res) => {
   const page = req.query.page || 1; // Página atual, padrão é 1
@@ -293,6 +335,42 @@ app.get('/processos', (req, res) => {
         res.send({ count: totalCount });
       });
     });
+    
+   app.get("/api/file/:folderId", async (req, res) => {
+  const folderId = req.params.folderId;
+  const accessToken = await getAccessToken(); // Obtém o access token usando a função getAccessToken
+
+  try {
+    const axiosConfig = {
+      method: "GET",
+      url: `https://www.googleapis.com/drive/v3/files`,
+      params: {
+        q: `'${folderId}' in parents`,
+        fields: "files(id, name, webViewLink, mimeType)",
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const response = await axios(axiosConfig);
+    res.json(response.data.files); // Retorna a resposta da API do Google Drive para o frontend
+  } catch (error) {
+    console.error('Ocorreu um erro ao listar os arquivos da pasta:', error);
+    res.status(500).json({ error: "Erro ao listar os arquivos da pasta" });
+  }
+});
+
+app.get("/api/gtoken", async (req, res) => {
+  try {
+    const accessToken = await getAccessToken();
+    res.json({ accessToken }); // Retornar o token de acesso como resposta para o frontend
+  } catch (error) {
+    console.error("Erro ao obter o token de acesso:", error);
+    res.status(500).json({ error: "Erro ao obter o token de acesso" });
+  }
+});
     
 
     app.get('/processos/:id', (req, res) => {
@@ -555,16 +633,26 @@ app.get('/tipos-de-processo/:id', (req, res) => {
       app.get('/clientes', (req, res) => {
         const { page } = req.query;
         const itemsPerPage = 10;
-        const offset = (page - 1) * itemsPerPage;
+        let query = '';
       
-        const query = `
-          SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
-          FROM clientes c
-          LEFT JOIN telefones t ON c.id = t.cliente_id
-          GROUP BY c.id
-          LIMIT ${itemsPerPage}
-          OFFSET ${offset}
-        `;
+        if (page) {
+          const offset = (page - 1) * itemsPerPage;
+          query = `
+            SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
+            FROM clientes c
+            LEFT JOIN telefones t ON c.id = t.cliente_id
+            GROUP BY c.id
+            LIMIT ${itemsPerPage}
+            OFFSET ${offset}
+          `;
+        } else {
+          query = `
+            SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
+            FROM clientes c
+            LEFT JOIN telefones t ON c.id = t.cliente_id
+            GROUP BY c.id
+          `;
+        }
       
         connection.query(query, (error, results, fields) => {
           if (error) {

@@ -79,7 +79,6 @@ const MostrarAndamento = ({ processoId }) => {
             try {
               const response = await axios.get(`http://localhost:3000/equipes/${equipeId}`);
               const { nome } = response.data as { nome: string };
-              console.log(response.data);
               setNomesEquipes((prevState) => ({ ...prevState, [equipeId]: nome }));
             } catch (error) {
               console.error(`Erro ao buscar nome da equipe ${equipeId}:`, error);

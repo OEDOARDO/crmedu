@@ -10,6 +10,9 @@ import ListarProcessos from './pages/ListarProcesso';
 import ProcessoDetalhes from './pages/ProcessosDetalhes';
 import RegistrarUsuario from './pages/RegistrarUsuario';
 import Cookies from 'js-cookie';
+import VisualizarDocumentos from './pages/VisualizarDocumentos';
+import UploadFiles from './pages/UploadFiles';
+
 
 type AuthenticatedRouteProps = {
   element: JSX.Element;
@@ -76,9 +79,15 @@ function App() {
             <AuthenticatedRoute element={<AddClient />} />
           }
         />
-
+        <Route
+          path="/processos/:id/visualizar-documentos"
+          element={<AuthenticatedRoute element={<VisualizarDocumentos />} />}
+        />
+                <Route
+          path="/processos/:id/upload"
+          element={<AuthenticatedRoute element={<UploadFiles />} />}
+        />
       </Routes>
-
     </Router>
 
   );

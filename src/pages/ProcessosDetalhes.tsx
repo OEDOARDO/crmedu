@@ -5,7 +5,7 @@ import { MdDescription, MdLocationOn, MdInfo } from "react-icons/md";
 import "./Header.css";
 import Header from "./Header";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import MostrarAndamento from "../MostrarAndamento";
 import Cookies from 'js-cookie';
 
@@ -41,7 +41,7 @@ const ProcessoDetalhes: React.FC = () => {
     loading: true,
   });
 
-  
+
   const [nomeCliente, setNomeCliente] = useState("");
   const [cpfCnpjCliente, setCpfCnpjCliente] = useState("");
   const [nomeRequerida, setRequerida] = useState("");
@@ -52,7 +52,7 @@ const ProcessoDetalhes: React.FC = () => {
   const [tipoProcesso, setTipoProcesso] = useState<string | null>(null);
   const dataProtocolo = new Date(processo?.data_protocolo ? processo.data_protocolo : "").toLocaleDateString("pt-BR");
   const { id } = useParams();
-const processoId = id ? parseInt(id) : 0; 
+  const processoId = id ? parseInt(id) : 0;
 
 
   //Anotações
@@ -74,7 +74,7 @@ const processoId = id ? parseInt(id) : 0;
       // Envie os dados para o servidor
       const response = await axios.post("http://localhost:3000/registrar-andamento", data);
       // Lide com a resposta do servidor
-      window.location.reload(); 
+      window.location.reload();
     } catch (error) {
       console.error(error);
     }
@@ -236,12 +236,16 @@ const processoId = id ? parseInt(id) : 0;
             <Button variant="btn btn-primary" size="sm" className="me-2">
               Financeiro
             </Button>
+            <Link to={`/processos/${processoId}/upload`} className="me-2">
             <Button variant="btn btn-primary" size="sm" className="me-2">
               Juntar Documentos
             </Button>
-            <Button variant="btn btn-primary" size="sm" className="me-2">
-              Visualizar Documentos
-            </Button>
+            </Link>
+            <Link to={`/processos/${processoId}/visualizar-documentos`} className="me-2">
+              <Button variant="btn btn-primary" size="sm">
+                Visualizar Documentos
+              </Button>
+            </Link>
             <Button variant="btn btn-primary" size="sm">
               Gerar Documentos
             </Button>

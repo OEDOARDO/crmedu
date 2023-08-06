@@ -6,12 +6,15 @@ import { Client } from "../components/interface";
 import { ParteContraria } from "../components/interface";
 import { TipoProcesso } from "../components/interface";
 import axios from 'axios';
+import { CreateFolder } from "../components/CreateFolder";
+
+
 
 
 function AddProcess() {
   const [clientes, setClientes] = useState<Client[]>([]);
   const [partesContrarias, setPartesContrarias] = useState<ParteContraria[]>([]);
-  const [selectedCliente, setSelectedCliente] = useState<number[]>([]);
+  const [selectedCliente, setSelectedCliente] = useState<number[]>([1]);
   const [selectedParteContraria, setSelectedParteContraria] = useState<number[]>([1]);
   const [numeroProcesso, setNumeroProcesso] = useState("");
   const [tipoProcesso, setTipoProcesso] = useState<TipoProcesso[]>([]);
@@ -110,7 +113,7 @@ function AddProcess() {
     setNumeroProcesso(event.target.value);
   };
 
-  const handleTipoProcessoChange = (event) => { 
+  const handleTipoProcessoChange = (event) => {
     setSelectedTipoProcesso(event.target.value); // Definir o estado selectedTipoProcesso
   };
 
@@ -146,12 +149,24 @@ function AddProcess() {
     setShowPopup(false);
   };
 
+
+
+
+
+  const [processoId, setProcessoId] = useState<number | null>(null);
+  const [folderId, setFolderId] = useState<number | null>(null); // Renomear para evitar conflitos
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const clienteSelecionado = clientes.find((cliente) => cliente.id === selectedCliente[0]);
+    const parteContrariaSelecionada = partesContrarias.find((parteContraria) => parteContraria.id === selectedParteContraria[0]);
+    const nomeCliente = clienteSelecionado ? clienteSelecionado.nome : "Cliente não selecionado";
+    const nomeParteContraria = parteContrariaSelecionada ? parteContrariaSelecionada.nome : "Parte contrária não selecionada";
+
     try {
-      // Realizar uma requisição para incluir o processo no banco de dados
-      const response = await axios.post('http://localhost:3000/processos', {
+      // Enviar a solicitação para incluir o processo no banco de dados
+      const response = await axios.post("http://localhost:3000/processos", {
         cliente: selectedCliente,
         parteContraria: selectedParteContraria,
         numeroProcesso: semNumeroProcesso ? undefined : numeroProcesso,
@@ -159,15 +174,42 @@ function AddProcess() {
         estado: selectedEstado,
         cidade: selectedCidade,
         status: 1, // Status id 1 = Ativo
+        googledrive: {
+          FolderId: null, // Definir inicialmente como null
+        },
       });
 
-  
+      // Obter o ID do processo retornado pela API
+      const newProcessoId = response.data.id; // Atualizar o ID do processo
+      console.log(newProcessoId);
+
+      // Atualizar o estado com o novo ID do processo
+      setProcessoId(newProcessoId);
+      console.log(newProcessoId);
+
+      const newFolderId = await CreateFolder(newProcessoId, nomeCliente, nomeParteContraria);
+
+
+      // Atualizar a solicitação para incluir o processo no banco de dados com o ID da pasta
+      await axios.put(`http://localhost:3000/processos/${newProcessoId}`, {
+        cliente: selectedCliente,
+        parteContraria: selectedParteContraria,
+        numeroProcesso: semNumeroProcesso ? undefined : numeroProcesso,
+        tipoProcesso: selectedTipoProcesso,
+        estado: selectedEstado,
+        cidade: selectedCidade,
+        status: 1, // Status id 1 = Ativo
+        googledrive: {
+          FolderId: newFolderId, // Definir o ID da pasta retornado
+        },
+      });
+
       setSelectedCliente([]);
       setSelectedParteContraria([]);
-      setNumeroProcesso('');
-      setSelectedTipoProcesso('');
-      setSelectedEstado('');
-      setSelectedCidade('');
+      setNumeroProcesso("");
+      setSelectedTipoProcesso("");
+      setSelectedEstado("");
+      setSelectedCidade("");
       console.log("Formulário limpo!");
     } catch (error) {
       // Lógica de tratamento de erro, se necessário
