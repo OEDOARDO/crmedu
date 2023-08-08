@@ -1,4 +1,5 @@
 import axios from "axios";
+import mime from "mime";
 
 
 
@@ -14,32 +15,73 @@ const getAccessToken = async () => {
   }
 };
 
-// Função para fazer upload de um arquivo para o Google Drive
+
+
+
+
 const uploadFile = async (folderId, fileData, fileName) => {
   try {
     const accessToken = await getAccessToken();
 
+    const boundary = "xxxxxxxxxx";
+
+    const metadata = {
+      name: fileName,
+      parents: [folderId],
+    };
+
+    let mimeType;
+
+    // Usar o módulo 'mime' para obter o tipo MIME diretamente
+    mimeType = mime.lookup(fileName) || "application/octet-stream";
+
+    let data = `--${boundary}\r\n`;
+    data += 'Content-Disposition: form-data; name="metadata"\r\n';
+    data += "Content-Type: application/json; charset=UTF-8\r\n\r\n";
+    data += JSON.stringify(metadata) + "\r\n";
+    data += `--${boundary}\r\n`;
+    data += `Content-Disposition: form-data; name="file"\r\n`;
+    data += `Content-Type: ${mimeType}\r\n\r\n`;
+
+    const payload = Buffer.concat([
+      Buffer.from(data, "utf8"),
+      Buffer.from(fileData, "binary"),
+      Buffer.from(`\r\n--${boundary}--\r\n`, "utf8"),
+    ]);
+
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": `multipart/form-data; boundary=${boundary}`,
+    };
+
     const axiosConfig = {
       method: "POST",
-      url: "https://www.googleapis.com/upload/drive/v3/files",
-      params: {
-        uploadType: "media", // Use "media" para carregar o conteúdo binário do arquivo
-      },
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": fileData.type, // Defina o tipo de conteúdo para o tipo de arquivo
-      },
-      data: fileData,
+      url: "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+      headers: headers,
+      data: payload,
     };
 
     const response = await axios(axiosConfig);
+    console.log(response.data);
     return response.data.id;
   } catch (error) {
     console.error("Erro ao fazer upload do arquivo:", error);
     // Lógica para lidar com o erro
     return null;
   }
-}
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const CreateFolder = async (idProcess, clientName, opponentName) => {
@@ -51,7 +93,7 @@ const CreateFolder = async (idProcess, clientName, opponentName) => {
 
     const axiosConfig = {
       method: "POST",
-      url: `https://www.googleapis.com/drive/v3/files`,
+      url: `https://www.googleapis.com/drive/v3/files`, 
       data: {
         name: `${idProcess} (${clientName} X ${opponentName})`,
         mimeType: "application/vnd.google-apps.folder", // Define o tipo como uma pasta

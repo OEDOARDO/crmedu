@@ -4,7 +4,8 @@ import axios from "axios";
 import { Button, Card, Container, Row, Col } from "react-bootstrap";
 import Header from "./Header";
 import { listFilesInFolder, downloadFile, getFileContent } from "../components/CreateFolder";
-import { Document, Page } from 'react-pdf';
+import { Pagination } from "react-bootstrap";
+
 
 interface File {
   id: string;
@@ -15,16 +16,24 @@ interface File {
 
 const VisualizarDocumentos: React.FC = () => {
   const { id } = useParams<{ id: string }>(); 
-  const navigate = useNavigate(); // Importe o useNavigate
+  const navigate = useNavigate(); // Importe o useNavigate  
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10; // Número de itens por página
 
   const [accessToken, setAccessToken] = useState<string>("");
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
 
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+
   useEffect(() => {
     fetchAccessToken();
   }, []);
+  
 
   useEffect(() => {
     if (id && accessToken) {
@@ -73,8 +82,13 @@ const VisualizarDocumentos: React.FC = () => {
     }
   };
 
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const displayedFiles = files.slice(startIdx, endIdx);
+
   const openFile = async (file: File) => {
     setSelectedFile(file);
+    setFileContent(null);
 
     try {
       const content = await getFileContent(file.id);
@@ -106,8 +120,9 @@ const VisualizarDocumentos: React.FC = () => {
       );
     } else if (selectedFile?.mimeType.startsWith("image/")) {
       return (
-        <img src={`https://drive.google.com/uc?id=${selectedFile.id}`} alt={selectedFile.name} />
-      );
+        <div className="file-viewer-container">
+          <img src={`https://drive.google.com/uc?id=${selectedFile.id}`} alt={selectedFile.name} style={{ maxWidth: "50%", maxHeight: "50%" }} />
+        </div>        );
     } else {
       return <div>Tipo de arquivo não suportado.</div>;
     }
@@ -138,20 +153,20 @@ const VisualizarDocumentos: React.FC = () => {
 
   const handleBack = () => {
     navigate(-1); // Navegar para a página anterior
-  };
+  };  
 
   return (
     <>
       <Header /> {/* Renderize o seu cabeçalho aqui */}
       <Container fluid>
         <Row>
-        <Col md={4} lg={3} className="overflow-auto border"> 
+          <Col md={4} lg={3} className="overflow-auto border">
             <h1>Documentos</h1>
             <Button variant="primary" onClick={handleBack}>
               Voltar à Página Anterior
             </Button>
             <></>
-            {files.map((file) => (
+            {displayedFiles.map((file) => (
               <Card key={file.id} className="mb-3">
                 <Card.Body>
                   <Card.Title>{file.name}</Card.Title>
@@ -164,11 +179,24 @@ const VisualizarDocumentos: React.FC = () => {
                 </Card.Body>
               </Card>
             ))}
+
+            <div className="pagination-container mt-3">
+              <Pagination>
+                {Array.from({ length: Math.ceil(files.length / itemsPerPage) }).map((_, index) => (
+                  <Pagination.Item
+                    key={index}
+                    active={index + 1 === currentPage}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                ))}
+              </Pagination>
+            </div>
           </Col>
           <Col md={8} lg={9} className="d-flex flex-column flex-grow-1">
             {selectedFile && (
-    <div className="file-viewer-container text-center"> 
-
+              <div className="file-viewer-container text-center">
                 {renderFileViewer()}
               </div>
             )}
