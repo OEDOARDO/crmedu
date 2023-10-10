@@ -233,6 +233,11 @@ const ProcessoDetalhes: React.FC = () => {
             <Button variant="btn btn-primary" size="sm" className="me-2" onClick={handleRegistrarAndamento}>
               Registrar Andamento
             </Button>
+            <Link to={`/processos/${processoId}/visualizar-documentos`} className="me-2">
+            <Button variant="btn btn-success" size="sm">
+              Protocolo Administrativo
+            </Button>
+            </Link>
             <Button variant="btn btn-primary" size="sm" className="me-2">
               Financeiro
             </Button>
