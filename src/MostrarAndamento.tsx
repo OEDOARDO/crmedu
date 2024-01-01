@@ -23,7 +23,6 @@ const MostrarAndamento = ({ processoId }) => {
   const [nomesAtividades, setNomesAtividades] = useState<{ [key: number]: string }>({});
   const [nomesEquipes, setNomesEquipes] = useState<{ [key: number]: string }>({});
   const [equipeIds, setEquipeIds] = useState<{ [key: number]: number }>({});
-  const [equipeIdsData, setEquipeIdsData] = useState<{ [key: number]: number }>({});
 
 
 
@@ -39,7 +38,6 @@ const MostrarAndamento = ({ processoId }) => {
         const uniqueUsuarioIds = Array.from(new Set(usuarioIds));
         const atividadeIds = observacoesData.map((observacao) => observacao.atividade_id);
         const uniqueAtividadeIds = Array.from(new Set(atividadeIds));
-        const nomesEquipesTemp: { [key: number]: string } = {};
         const nomesUsuariosTemp: { [key: number]: string } = {};
         const nomesAtividadesTemp: { [key: number]: string } = {};
 
@@ -74,6 +72,7 @@ const MostrarAndamento = ({ processoId }) => {
 
         const uniqueEquipeIds = Array.from(new Set(Object.values(equipeIds)));
 
+
         await Promise.all(
           (uniqueEquipeIds as number[]).map(async (equipeId) => {
             try {
@@ -88,7 +87,7 @@ const MostrarAndamento = ({ processoId }) => {
 
         setNomesUsuarios(nomesUsuariosTemp);
         setNomesAtividades(nomesAtividadesTemp);
-        setEquipeIds(equipeIds);
+        setEquipeIds((prevEquipeIds) => ({ ...prevEquipeIds }));
 
 
       } catch (error) {
@@ -103,18 +102,31 @@ const MostrarAndamento = ({ processoId }) => {
     setCurrentPage(page);
   };
 
+  const parseDate = (dateString: string): Date => {
+    const [dayMonthYear, time] = dateString.split(' ');
+    const [day, month, year] = dayMonthYear.split('-');
+    const [hours, minutes] = time.split(':');
+    return new Date(`${year}-${month}-${day}T${hours}:${minutes}:00`);
+  };
+
   const renderObservacoes = () => {
     if (!observacoes || observacoes.length === 0) {
       return <p className="text-center">Não há observações disponíveis.</p>;
     }
-
+  
+    const observacoesOrdenadas = observacoes.sort((a, b) => {
+      const dateA = parseDate(a.data_registro);
+      const dateB = parseDate(b.data_registro);
+      return dateB.getTime() - dateA.getTime(); // Ordenar do mais recente para o mais antigo
+    });
+  
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const observacoesPaginadas = observacoes.slice(startIndex, endIndex);
-
+    const observacoesPaginadas = observacoesOrdenadas.slice(startIndex, endIndex);
+  
     return (
-<div className="observacoes mt-n2">
-  {observacoesPaginadas.map((observacao, index) => (
+      <div className="observacoes mt-n2">
+        {observacoesPaginadas.map((observacao) => (
     <div key={observacao.id} className="card mb-3">
       <div className="observacoes-body">
         <div className="container-fluid observacao-superior bg-secondary d-flex border border-dark ps-0">
