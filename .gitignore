@@ -1,0 +1,11 @@
+# Ignorar o diretório node_modules em qualquer lugar do projeto
+node_modules/
+
+# Ignorar a pasta build na raiz do projeto frontend
+/frontend/build/
+
+# Ignorar a pasta build na raiz do projeto backend
+/backend/build/
+
+# Ignorar o arquivo package-lock.json em qualquer lugar do projeto
+package-lock.json
