@@ -43,7 +43,7 @@ const VisualizarDocumentos: React.FC = () => {
 
   const fetchAccessToken = async () => {
     try {
-      const response = await axios.get("http://18.225.117.159:3000/api/gtoken");
+      const response = await axios.get("http://3.141.59.134:3000/api/gtoken");
       const accessToken = response.data.accessToken;
       setAccessToken(accessToken);
     } catch (error) {
@@ -53,7 +53,7 @@ const VisualizarDocumentos: React.FC = () => {
 
   const fetchFilesFromFolder = async () => {
     try {
-      const response = await axios.get(`http://18.225.117.159:3000/processos/${id}`);
+      const response = await axios.get(`http://3.141.59.134:3000/processos/${id}`);
       const folderId = response.data.googledrive;
 
       const filesResponse = await listFilesInFolder(folderId);

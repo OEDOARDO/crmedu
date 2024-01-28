@@ -72,7 +72,7 @@ const ProcessoDetalhes: React.FC = () => {
 
     try {
       // Envie os dados para o servidor
-      const response = await axios.post("http://18.225.117.159:3000/registrar-andamento", data);
+      const response = await axios.post("http://3.141.59.134:3000/registrar-andamento", data);
       // Lide com a resposta do servidor
       window.location.reload();
     } catch (error) {
@@ -96,11 +96,11 @@ const ProcessoDetalhes: React.FC = () => {
 
   const fetchProcesso = async () => {
     try {
-      const response = await axios.get(`http://18.225.117.159:3000/processos/${id}`);
+      const response = await axios.get(`http://3.141.59.134:3000/processos/${id}`);
       setProcesso(response.data);
 
       // Obtenha os dados do cliente
-      const responseCliente = await axios.get(`http://18.225.117.159:3000/clientes/${response.data.id_cliente}`);
+      const responseCliente = await axios.get(`http://3.141.59.134:3000/clientes/${response.data.id_cliente}`);
       const clienteData = responseCliente.data;
       setNomeCliente(clienteData.nome);
       setCpfCnpjCliente(clienteData.cpf);
@@ -111,7 +111,7 @@ const ProcessoDetalhes: React.FC = () => {
       }
 
       const responseRequerida = await axios.get(
-        `http://18.225.117.159:3000/partes-contrarias/${parseInt(
+        `http://3.141.59.134:3000/partes-contrarias/${parseInt(
           response.data.parte_contraria,
           10
         )}`
@@ -132,7 +132,7 @@ const ProcessoDetalhes: React.FC = () => {
 
   const fetchTipoProcesso = async (tipoProcessoId) => {
     try {
-      const response = await axios.get(`http://18.225.117.159:3000/tipos-de-processo/${tipoProcessoId}`);
+      const response = await axios.get(`http://3.141.59.134:3000/tipos-de-processo/${tipoProcessoId}`);
       // Atualize o estado com o nome do tipo de processo retornado pela API
       setTipoProcesso(response.data.tipo);
     } catch (error) {
@@ -142,7 +142,7 @@ const ProcessoDetalhes: React.FC = () => {
 
   const fetchAtividades = async () => {
     try {
-      const response = await axios.get("http://18.225.117.159:3000/atividades");
+      const response = await axios.get("http://3.141.59.134:3000/atividades");
       setAtividades(response.data);
     } catch (error) {
       console.error(error);
@@ -151,7 +151,7 @@ const ProcessoDetalhes: React.FC = () => {
 
   const fetchEquipes = async () => {
     try {
-      const response = await axios.get("http://18.225.117.159:3000/equipes");
+      const response = await axios.get("http://3.141.59.134:3000/equipes");
       setEquipes(response.data);
     } catch (error) {
       console.error(error);

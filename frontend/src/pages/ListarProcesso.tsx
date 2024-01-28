@@ -60,11 +60,11 @@ const Processos: React.FC<ListarProcessosProps & {
         for (const processo of data) {
           try {
             const responseCliente = await axios.get(
-              `http://18.225.117.159:3000/clientes/${processo.id_cliente}`
+              `http://3.141.59.134:3000/clientes/${processo.id_cliente}`
             );
             const clienteData: Cliente = responseCliente.data;
             const responseParteContraria = await axios.get(
-              `http://18.225.117.159:3000/partes-contrarias/${parseInt(
+              `http://3.141.59.134:3000/partes-contrarias/${parseInt(
                 processo.parte_contraria,
                 10
               )}`
@@ -154,7 +154,7 @@ const ListarProcessos: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get("http://18.225.117.159:3000/tipos-de-processo")
+      .get("http://3.141.59.134:3000/tipos-de-processo")
       .then((response) => {
         const tiposDeProcesso = response.data.reduce(
           (map: { [key: number]: string }, tipo: TipoProcesso) => {
@@ -172,7 +172,7 @@ const ListarProcessos: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get(`http://18.225.117.159:3000/processos?page=${currentPage}`)
+      .get(`http://3.141.59.134:3000/processos?page=${currentPage}`)
       .then((response) => {
         setData(response.data);
       })
@@ -181,7 +181,7 @@ const ListarProcessos: React.FC = () => {
       });
 
     axios
-      .get("http://18.225.117.159:3000/processos/count")
+      .get("http://3.141.59.134:3000/processos/count")
       .then((response) => {
         const totalCount = response.data.count;
         const totalPages = Math.ceil(totalCount / 5); // Altere "5" para o número de processos exibidos por página
@@ -194,7 +194,7 @@ const ListarProcessos: React.FC = () => {
   
   useEffect(() => {
     axios
-      .get("http://18.225.117.159:3000/partes-contrarias")
+      .get("http://3.141.59.134:3000/partes-contrarias")
       .then((response) => {
         const partesContrarias = response.data.reduce(
           (map: { [key: string]: string }, parteContraria: ParteContraria) => {

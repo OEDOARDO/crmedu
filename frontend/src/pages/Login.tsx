@@ -22,7 +22,7 @@ const Login = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://18.225.117.159:3000/login', { email, senha });
+      const response = await axios.post('http://3.141.59.134:3000/login', { email, senha });
       const { token, id } = response.data;
       Cookies.set("token", token);
       Cookies.set("userId", id);  
@@ -37,7 +37,7 @@ const Login = () => {
     const token = Cookies.get('token');
     if (token && !sessionChecked) {
       axios
-        .get('http://18.225.117.159:3000/verificarsessao', { headers: { Authorization: `Bearer ${token}` } })
+        .get('http://3.141.59.134:3000/verificarsessao', { headers: { Authorization: `Bearer ${token}` } })
         .then(() => {
           console.log('Sessão autenticada');
           setSessionChecked(true); // Atualiza o estado da sessão verificada para true

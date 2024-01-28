@@ -53,7 +53,7 @@ const AddClient = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post("http://18.225.117.159:3000/addcliente", formData);
+      const response = await axios.post("http://3.141.59.134:3000/addcliente", formData);
       console.log(response);
       setIsSuccess(true);
     } catch (error) {

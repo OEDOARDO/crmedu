@@ -11,7 +11,7 @@ const RegistrarUsuario = () => {
   useEffect(() => {
     const fetchEquipes = async () => {
       try {
-        const response = await axios.get('http://18.225.117.159:3000/equipes');
+        const response = await axios.get('http://3.141.59.134:3000/equipes');
         setEquipesList(response.data);
       } catch (error) {
         console.error(error);
@@ -24,7 +24,7 @@ const RegistrarUsuario = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://18.225.117.159:3000/registrar-usuario', { nome, email, senha, equipe });
+      const response = await axios.post('http://3.141.59.134:3000/registrar-usuario', { nome, email, senha, equipe });
       console.log(response);
       alert('Usuário criado com sucesso!');
       setNome('');

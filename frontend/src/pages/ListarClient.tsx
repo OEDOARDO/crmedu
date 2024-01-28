@@ -48,7 +48,7 @@
 
     useEffect(() => {
       axios
-      .get(`http://18.225.117.159:3000/clientes?page=${currentPage + 1}`)
+      .get(`http://3.141.59.134:3000/clientes?page=${currentPage + 1}`)
       .then((response) => {
         setData(response.data);
       })
@@ -59,7 +59,7 @@
     
       // Requisição separada para obter o número total de registros
       axios
-        .get("http://18.225.117.159:3000/clientes/count")
+        .get("http://3.141.59.134:3000/clientes/count")
         .then((response) => {
           const totalCount = response.data.count;
           const totalPages = Math.ceil(totalCount / 10); // Altere "10" para o número de itens exibidos por página

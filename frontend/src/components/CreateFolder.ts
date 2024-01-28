@@ -6,7 +6,7 @@ import mime from "mime";
 // Função para fazer a requisição para obter o Access Token do backend
 const getAccessToken = async () => {
   try {
-    const response = await axios.get("http://18.225.117.159:3000/api/gtoken");
+    const response = await axios.get("http://3.141.59.134:3000/api/gtoken");
     const accessToken = response.data.accessToken;
     return accessToken;
   } catch (error) {
@@ -115,7 +115,7 @@ const CreateFolder = async (idProcess, clientName, opponentName) => {
 
 const listFilesInFolder = async (folderId) => {
   try {
-    const response = await axios.get(`http://18.225.117.159:3000/api/file/${folderId}`);
+    const response = await axios.get(`http://3.141.59.134:3000/api/file/${folderId}`);
     return response.data; // Retorna os detalhes dos arquivos obtidos através do proxy reverso
   } catch (error) {
     console.error('Ocorreu um erro ao listar os arquivos da pasta:', error);

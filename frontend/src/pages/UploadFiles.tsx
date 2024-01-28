@@ -87,7 +87,7 @@ const UploadFiles: React.FC = () => {
   useEffect(() => {
     const fetchFolderId = async () => {
       try {
-        const response = await axios.get(`http://18.225.117.159:3000/processos/${id}`);
+        const response = await axios.get(`http://3.141.59.134:3000/processos/${id}`);
         const folderId = response.data.googledrive;
         setFolderId(folderId);
       } catch (error) {
