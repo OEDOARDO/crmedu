@@ -1,5 +1,5 @@
 import axios from "axios";
-import mime from "mime";
+import mimeTypes from "mime-types"; 
 
 
 
@@ -33,7 +33,7 @@ const uploadFile = async (folderId, fileData, fileName) => {
     let mimeType;
 
     // Usar o módulo 'mime' para obter o tipo MIME diretamente
-    mimeType = mime.lookup(fileName) || "application/octet-stream";
+    mimeType = mimeTypes.lookup(fileName) || "application/octet-stream";
 
     let data = `--${boundary}\r\n`;
     data += 'Content-Disposition: form-data; name="metadata"\r\n';
