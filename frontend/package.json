@@ -88,5 +88,9 @@
     "typescript": "^5.0.4",
     "url": "^0.11.1"
   },
-  "browser": {}
+  "browser": {
+  "fs": false,
+  "path": false,
+  "os": false
+}
 }
