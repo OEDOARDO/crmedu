@@ -39,9 +39,11 @@ interface ListarProcessosProps {
 const Processos: React.FC<ListarProcessosProps & {
   tiposDeProcesso: { [key: number]: string };
   partesContrarias: { [key: string]: string };
+  
 }> = ({ data, setSelected, tiposDeProcesso, partesContrarias }) => {
   const [processosComNomes, setProcessosComNomes] = useState<Processo[]>([]);
   const navigate = useNavigate();
+  
 
   const navigateToDetalhes = (processoId: number) => {
     navigate(`/processos/${processoId}`);
@@ -78,7 +80,7 @@ const Processos: React.FC<ListarProcessosProps & {
             ...processo,
             cliente: cliente ? cliente.nome : "Cliente não encontrado",
             parte_contraria: parteContraria ? parteContraria.nome : "Parte contrária não encontrada",
-            tipo_processo: processo.tipo_processo ? tiposDeProcessoMap[processo.tipo_processo as number] : "" // Use tiposDeProcessoMap aqui
+            tipo_processo: processo.tipo_processo ? tiposDeProcesso[processo.tipo_processo as number] : ""
           };
         });
         
@@ -158,10 +160,10 @@ const ListarProcessos: React.FC = () => {
           axios.get("http://127.0.0.1:3001/tipos-de-processo"),
           axios.get(`http://127.0.0.1:3001/processos?page=${currentPage}`),
         ]);
-
+  
         const totalCountResponse = await axios.get("http://127.0.0.1:3001/processos/count");
         const totalCount = totalCountResponse.data.count;
-
+  
         const tiposDeProcesso = tiposDeProcessoResponse.data.reduce(
           (map: { [key: number]: string }, tipo: TipoProcesso) => {
             map[tipo.id] = tipo.tipo;
@@ -170,7 +172,8 @@ const ListarProcessos: React.FC = () => {
           {}
         );
         setTiposDeProcesso(tiposDeProcesso);
-
+        console.log("tiposDeProcesso no ListarProcessos:", tiposDeProcesso);
+  
         setData(processosResponse.data);
         const totalPages = Math.ceil(totalCount / 5);
         setTotalPages(totalPages);
@@ -178,9 +181,9 @@ const ListarProcessos: React.FC = () => {
         console.log(error);
       }
     };
-
+  
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, setTiposDeProcesso]);
 
   const setSelected = React.useCallback(
     (processo: Processo) => {

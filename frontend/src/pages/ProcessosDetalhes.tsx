@@ -407,17 +407,17 @@ const ProcessoDetalhes: React.FC = () => {
                           </Form.Group>
                         </Col>
                         <Col xs={6}>
-                          <Form.Group className="mb-3">
-                            <Form.Label>
-                              <MdDescription /> Natureza
-                            </Form.Label>
-                            <Form.Control
-                              type="text"
-                              readOnly
-                              value={tipoProcesso !== null ? tipoProcesso : ""}
-                            />
-                          </Form.Group>
-                        </Col>
+  <Form.Group className="mb-3">
+    <Form.Label>
+      <MdDescription /> Natureza
+    </Form.Label>
+    {tipoProcesso !== null ? (
+      <Form.Control type="text" readOnly value={tipoProcesso} />
+    ) : (
+      <span>Carregando...</span>
+    )}
+  </Form.Group>
+</Col>
                       </Row>
                       <Row>
                         <Col xs={12}>
