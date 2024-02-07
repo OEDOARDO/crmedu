@@ -6,14 +6,13 @@ import axios from "axios";
 import ReactPaginate from "react-paginate";
 import { useNavigate } from "react-router-dom";
 
-
 interface Processo {
   id: number;
   id_cliente: string;
   parte_contraria: string;
   numero_processo?: string;
   cliente?: string;
-  tipo_processo?: number;
+  tipo_processo?: string | number; // Permitindo que tipo_processo seja uma string ou um número
   status?: number; // Atualizado para número
 }
 
@@ -37,8 +36,6 @@ interface ListarProcessosProps {
   setSelected: (processo: Processo & { id: number }) => void;
 }
 
-
-
 const Processos: React.FC<ListarProcessosProps & {
   tiposDeProcesso: { [key: number]: string };
   partesContrarias: { [key: string]: string };
@@ -50,49 +47,51 @@ const Processos: React.FC<ListarProcessosProps & {
     navigate(`/processos/${processoId}`);
   };
 
-
-
-
   useEffect(() => {
     const fetchProcessosComNomes = async () => {
       try {
-        const processosAtualizados: Processo[] = [];
-        for (const processo of data) {
-          try {
-            const responseCliente = await axios.get(
-              `http://3.141.59.134:3000/clientes/${processo.id_cliente}`
-            );
-            const clienteData: Cliente = responseCliente.data;
-            const responseParteContraria = await axios.get(
-              `http://3.141.59.134:3000/partes-contrarias/${parseInt(
-                processo.parte_contraria,
-                10
-              )}`
-            );
-            const parteContrariaData: ParteContraria =
-              responseParteContraria.data;
-            processosAtualizados.push({
-              ...processo,
-              cliente: clienteData.nome,
-              parte_contraria: parteContrariaData.nome,
-            });
-          } catch (error) {
-            console.log(error);
-            processosAtualizados.push({
-              ...processo,
-              cliente: "Cliente não encontrado",
-              parte_contraria: "Parte contrária não encontrada",
-            });
-          }
+        if (data.length === 0) {
+          return; // Não faz nada se o array estiver vazio
         }
+    
+        const clienteIdsPromise = data.map(processo => processo.id_cliente);
+        const parteContrariaIdsPromise = data.map(processo => parseInt(processo.parte_contraria, 10));
+    
+        const [clienteIds, parteContrariaIds] = await Promise.all([clienteIdsPromise, parteContrariaIdsPromise]);
+    
+        const response = await axios.post('http://127.0.0.1:3001/clientes/partes-contrarias', { clienteIds, parteContrariaIds });
+        const { clientes, partesContrarias, tiposDeProcesso } = response.data;
+    
+        const tiposDeProcessoMap: { [key: number]: string } = {};
+    
+        tiposDeProcesso.forEach((tipo: TipoProcesso) => {
+          tiposDeProcessoMap[tipo.id] = tipo.tipo;
+        });
+
+        console.log("tiposDeProcessoMap:", tiposDeProcessoMap); // Adicione este console.log para verificar tiposDeProcessoMap
+
+        const processosAtualizados: Processo[] = data.map(processo => {
+          const cliente = clientes.find(cliente => cliente.id === processo.id_cliente);
+          const parteContraria = partesContrarias.find(parteContraria => parteContraria.id === parseInt(processo.parte_contraria, 10));
+  
+          return {
+            ...processo,
+            cliente: cliente ? cliente.nome : "Cliente não encontrado",
+            parte_contraria: parteContraria ? parteContraria.nome : "Parte contrária não encontrada",
+            tipo_processo: processo.tipo_processo ? tiposDeProcessoMap[processo.tipo_processo as number] : "" // Use tiposDeProcessoMap aqui
+          };
+        });
+        
+      console.log("processosAtualizados:", processosAtualizados); // Adicione este console.log para verificar processosAtualizados
+
         setProcessosComNomes(processosAtualizados);
       } catch (error) {
         console.log(error);
       }
     };
-
+  
     fetchProcessosComNomes();
-  }, [data]);
+  }, [data, tiposDeProcesso, partesContrarias]);
 
   const getStatusColor = (status?: number) => {
     switch (status) {
@@ -153,10 +152,17 @@ const ListarProcessos: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
 
   useEffect(() => {
-    axios
-      .get("http://3.141.59.134:3000/tipos-de-processo")
-      .then((response) => {
-        const tiposDeProcesso = response.data.reduce(
+    const fetchData = async () => {
+      try {
+        const [tiposDeProcessoResponse, processosResponse] = await Promise.all([
+          axios.get("http://127.0.0.1:3001/tipos-de-processo"),
+          axios.get(`http://127.0.0.1:3001/processos?page=${currentPage}`),
+        ]);
+
+        const totalCountResponse = await axios.get("http://127.0.0.1:3001/processos/count");
+        const totalCount = totalCountResponse.data.count;
+
+        const tiposDeProcesso = tiposDeProcessoResponse.data.reduce(
           (map: { [key: number]: string }, tipo: TipoProcesso) => {
             map[tipo.id] = tipo.tipo;
             return map;
@@ -164,51 +170,17 @@ const ListarProcessos: React.FC = () => {
           {}
         );
         setTiposDeProcesso(tiposDeProcesso);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
 
-  useEffect(() => {
-    axios
-      .get(`http://3.141.59.134:3000/processos?page=${currentPage}`)
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    axios
-      .get("http://3.141.59.134:3000/processos/count")
-      .then((response) => {
-        const totalCount = response.data.count;
-        const totalPages = Math.ceil(totalCount / 5); // Altere "5" para o número de processos exibidos por página
+        setData(processosResponse.data);
+        const totalPages = Math.ceil(totalCount / 5);
         setTotalPages(totalPages);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.log(error);
-      });
+      }
+    };
+
+    fetchData();
   }, [currentPage]);
-  
-  useEffect(() => {
-    axios
-      .get("http://3.141.59.134:3000/partes-contrarias")
-      .then((response) => {
-        const partesContrarias = response.data.reduce(
-          (map: { [key: string]: string }, parteContraria: ParteContraria) => {
-            map[parteContraria.id] = parteContraria.nome;
-            return map;
-          },
-          {}
-        );
-        setPartesContrarias(partesContrarias);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
 
   const setSelected = React.useCallback(
     (processo: Processo) => {

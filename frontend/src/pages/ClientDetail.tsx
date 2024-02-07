@@ -51,7 +51,7 @@ function ClientDetail() {
 
   const handleSaveClick = () => {
     axios
-      .put(`http://3.141.59.134:3000/clientes/${id}`, client)
+      .put(`http://127.0.0.1:3001/clientes/${id}`, client)
       .then(() => {
         setEditing(false);
       })
@@ -62,7 +62,7 @@ function ClientDetail() {
 
   const handleDeleteClick = () => {
     axios
-      .delete(`http://3.141.59.134:3000/clientes/${id}`)
+      .delete(`http://127.0.0.1:3001/clientes/${id}`)
       .then(() => {
         // redirecionar para a lista de clientes após a exclusão bem sucedida
       })
@@ -123,7 +123,7 @@ function ClientDetail() {
 
   useEffect(() => {
     axios
-      .get(`http://3.141.59.134:3000/clientes/${id}`)
+      .get(`http://127.0.0.1:3001/clientes/${id}`)
       .then((response) => {
         setClient(response.data);
       })

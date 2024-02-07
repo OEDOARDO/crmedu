@@ -16,7 +16,7 @@ const Header = () => {
         const userId = Cookies.get("userId");
 
         axios.defaults.headers.common["Authorization"] = token;
-        const response = await axios.get(`http://3.141.59.134:3000/usuarios/${userId}`);
+        const response = await axios.get(`http://127.0.0.1:3001/usuarios/${userId}`);
 
         const { nome } = response.data;
         setNomeUsuarioLogado(nome); 

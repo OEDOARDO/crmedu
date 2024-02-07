@@ -411,18 +411,19 @@ app.get('/processos', (req, res) => {
 });
 
 
-    app.get('/processos/count', (req, res) => {
-      connection.query('SELECT COUNT(*) AS count FROM processos', (err, results) => {
-        if (err) {
-          console.error(err);
-          res.status(500).send({ error: 'Erro ao obter o número total de registros de processos.' });
-          return;
-        }
-        
-        const totalCount = results[0].count;
-        res.send({ count: totalCount });
-      });
-    });
+app.get('/processos/count', (req, res) => {
+  connection.query('SELECT COUNT(*) AS count FROM processos', (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send({ error: 'Erro ao obter o número total de registros de processos.' });
+      return;
+    }
+    
+    const totalCount = results[0].count;
+    res.set('x-total-count', totalCount); // Corrigido para usar res.set() para adicionar o cabeçalho
+    res.send({ count: totalCount });
+  });
+});
     
    app.get("/api/file/:folderId", async (req, res) => {
   const folderId = req.params.folderId;
@@ -784,6 +785,92 @@ app.get('/tipos-de-processo/:id', (req, res) => {
           
           res.send({ count });
         });
+      });
+      
+      app.post('/clientes/partes-contrarias', async (req, res) => {
+        try {
+          const { clienteIds, parteContrariaIds } = req.body;
+      
+          const clienteQuery = `
+            SELECT c.*, GROUP_CONCAT(t.numero SEPARATOR ', ') as telefones
+            FROM clientes c
+            LEFT JOIN telefones t ON c.id = t.cliente_id
+            WHERE c.id IN (?)
+            GROUP BY c.id
+          `;
+      
+          const parteContrariaQuery = `
+            SELECT *
+            FROM partes_contrarias
+            WHERE id IN (?)
+          `;
+      
+          const tipoProcessoQuery = `
+            SELECT *
+            FROM tipodeprocesso
+          `;
+      
+          const [clientes, partesContrarias, tiposDeProcesso] = await Promise.all([
+            new Promise((resolve, reject) => {
+              connection.query(clienteQuery, [clienteIds], (error, results) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  const formattedClientes = results.map(result => ({
+                    id: result.id,
+                    nome: result.nome,
+                    cpf: result.cpf,
+                    endereco: {
+                      cep: result.endereco_cep,
+                      rua: result.endereco_rua,
+                      bairro: result.endereco_bairro,
+                      cidade: result.endereco_cidade,
+                      estado: result.endereco_estado,
+                      numero: result.endereco_numero,
+                    },
+                    email: result.email,
+                    observacoes: result.observacoes,
+                    telefones: result.telefones.split(', '),
+                  }));
+                  resolve(formattedClientes);
+                }
+              });
+            }),
+            new Promise((resolve, reject) => {
+              connection.query(parteContrariaQuery, [parteContrariaIds], (error, results) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  const formattedPartesContrarias = results.map(result => ({
+                    id: result.id,
+                    nome: result.nome,
+                    // Adicione outros campos conforme necessário
+                  }));
+                  resolve(formattedPartesContrarias);
+                }
+              });
+            }),
+            new Promise((resolve, reject) => {
+              connection.query(tipoProcessoQuery, (error, results) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  const formattedTiposDeProcesso = results.map(result => ({
+                    id: result.id,
+                    tipo: result.tipo,
+                    // Adicione outros campos conforme necessário
+                  }));
+                  resolve(formattedTiposDeProcesso);
+                }
+              });
+            }),
+          ]);
+      
+          res.send({ clientes, partesContrarias, tiposDeProcesso });
+        } catch (error) {
+          console.error('Erro ao buscar clientes, partes contrárias e tipos de processo:', error);
+          res.status(500).send({ error: 'Não foi possível buscar os clientes, partes contrárias e tipos de processo.' });
+        }
       });
       
 

@@ -31,7 +31,7 @@ const MostrarAndamento = ({ processoId }) => {
   useEffect(() => {
     const carregarObservacoes = async () => {
       try {
-        const response = await axios.get(`http://3.141.59.134:3000/processos/${processoId}/observacoes`);
+        const response = await axios.get(`http://127.0.0.1:3001/processos/${processoId}/observacoes`);
         const observacoesData = response.data || [];
         setObservacoes(observacoesData);
         const usuarioIds = observacoesData.map((observacao) => observacao.id_usuario);
@@ -45,7 +45,7 @@ const MostrarAndamento = ({ processoId }) => {
         await Promise.all(
           (uniqueUsuarioIds as number[]).map(async (usuarioId) => {
             try {
-              const response = await axios.get(`http://3.141.59.134:3000/usuarios/${usuarioId}`);
+              const response = await axios.get(`http://127.0.0.1:3001/usuarios/${usuarioId}`);
               const { nome } = response.data as { nome: string };
               nomesUsuariosTemp[usuarioId] = nome;
             } catch (error) {
@@ -58,7 +58,7 @@ const MostrarAndamento = ({ processoId }) => {
         await Promise.all(
           (uniqueAtividadeIds as number[]).map(async (atividadeId) => {
             try {
-              const response = await axios.get(`http://3.141.59.134:3000/atividades/${atividadeId}`);
+              const response = await axios.get(`http://127.0.0.1:3001/atividades/${atividadeId}`);
               const { nome, equipe_id } = response.data as { nome: string, equipe_id: number };
               nomesAtividadesTemp[atividadeId] = nome;
               equipeIds[atividadeId] = equipe_id;
@@ -76,7 +76,7 @@ const MostrarAndamento = ({ processoId }) => {
         await Promise.all(
           (uniqueEquipeIds as number[]).map(async (equipeId) => {
             try {
-              const response = await axios.get(`http://3.141.59.134:3000/equipes/${equipeId}`);
+              const response = await axios.get(`http://127.0.0.1:3001/equipes/${equipeId}`);
               const { nome } = response.data as { nome: string };
               setNomesEquipes((prevState) => ({ ...prevState, [equipeId]: nome }));
             } catch (error) {

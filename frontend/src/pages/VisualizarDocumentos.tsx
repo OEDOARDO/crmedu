@@ -43,7 +43,7 @@ const VisualizarDocumentos: React.FC = () => {
 
   const fetchAccessToken = async () => {
     try {
-      const response = await axios.get("http://3.141.59.134:3000/api/gtoken");
+      const response = await axios.get("http://127.0.0.1:3001/api/gtoken");
       const accessToken = response.data.accessToken;
       setAccessToken(accessToken);
     } catch (error) {
@@ -53,7 +53,7 @@ const VisualizarDocumentos: React.FC = () => {
 
   const fetchFilesFromFolder = async () => {
     try {
-      const response = await axios.get(`http://3.141.59.134:3000/processos/${id}`);
+      const response = await axios.get(`http://127.0.0.1:3001/processos/${id}`);
       const folderId = response.data.googledrive;
 
       const filesResponse = await listFilesInFolder(folderId);
@@ -102,19 +102,21 @@ const VisualizarDocumentos: React.FC = () => {
     } catch (error) {
       console.error("Erro ao obter o conteúdo do arquivo:", error);
     }
-  };
+  };  
 
   const renderFileViewer = () => {
+    console.log("Tipo MIME do arquivo:", selectedFile?.mimeType); // Adicione este console.log
+
     if (selectedFile?.mimeType === "text/plain") {
       return <pre>{fileContent}</pre>;
     } else if (selectedFile?.mimeType === "application/pdf") {
       return (
-        <object
-          data={`https://drive.google.com/uc?id=${selectedFile.id}`}
-          type="application/pdf"
-          width="100%"
-          height="600px"
-        >
+<object
+  data={`https://drive.google.com/uc?id=${selectedFile.id}`}
+  type="application/pdf"
+  width="100%"
+  height="600px"
+>
           <p>Seu navegador não suporta visualização de PDFs. Você pode baixar o arquivo <a href={`https://drive.google.com/uc?id=${selectedFile.id}`}>aqui</a>.</p>
         </object>
       );

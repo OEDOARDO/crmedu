@@ -62,9 +62,9 @@ function AddProcess() {
     }
   };
 
-  const clientesUrl = "http://3.141.59.134:3000/clientes";
-  const partesContrariasUrl = "http://3.141.59.134:3000/partes-contrarias";
-  const TipoProcessoUrl = "http://3.141.59.134:3000/tipos-de-processo";
+  const clientesUrl = "http://127.0.0.1:3001/clientes";
+  const partesContrariasUrl = "http://127.0.0.1:3001/partes-contrarias";
+  const TipoProcessoUrl = "http://127.0.0.1:3001/tipos-de-processo";
 
   const fetchClientes = async () => {
     try {
@@ -166,7 +166,7 @@ function AddProcess() {
 
     try {
       // Enviar a solicitação para incluir o processo no banco de dados
-      const response = await axios.post("http://3.141.59.134:3000/processos", {
+      const response = await axios.post("http://127.0.0.1:3001/processos", {
         cliente: selectedCliente,
         parteContraria: selectedParteContraria,
         numeroProcesso: semNumeroProcesso ? undefined : numeroProcesso,
@@ -191,7 +191,7 @@ function AddProcess() {
 
 
       // Atualizar a solicitação para incluir o processo no banco de dados com o ID da pasta
-      await axios.put(`http://3.141.59.134:3000/processos/${newProcessoId}`, {
+      await axios.put(`http://127.0.0.1:3001/processos/${newProcessoId}`, {
         cliente: selectedCliente,
         parteContraria: selectedParteContraria,
         numeroProcesso: semNumeroProcesso ? undefined : numeroProcesso,
@@ -260,7 +260,7 @@ function AddProcess() {
     }
 
     // Enviar os dados de cadastro da parte contrária para a API
-    const url = 'http://3.141.59.134:3000/adicionar-parte-contraria';
+    const url = 'http://127.0.0.1:3001/adicionar-parte-contraria';
     const data = {
       nome: nomeParteContraria,
       cpf: cpf !== null ? cpf : null,
